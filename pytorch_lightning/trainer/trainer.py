@@ -1051,7 +1051,7 @@ class Trainer(TrainerIO):
             self.testing = True
             self.fit(model)
         else:
-            self.__run_evaluation(test=True)
+            return self.__run_evaluation(test=True)
 
     def __metrics_to_scalars(self, metrics, blacklist=set()):
         new_metrics = {}
@@ -1254,6 +1254,7 @@ class Trainer(TrainerIO):
     def __run_evaluation(self, test=False):
         # when testing make sure user defined a test step
         can_run_test_step = False
+        metrics = None
         if test:
             can_run_test_step = self.__is_overriden('test_step') and self.__is_overriden('test_end')
             if not can_run_test_step:
@@ -1290,6 +1291,7 @@ class Trainer(TrainerIO):
                                              test)
 
             self.__add_tqdm_metrics(eval_out_metrics)
+            metrics = eval_out_metrics
 
             # hook
             model.on_post_performance_check()
@@ -1304,3 +1306,4 @@ class Trainer(TrainerIO):
             print('save callback...')
             self.checkpoint_callback.on_epoch_end(epoch=self.current_epoch,
                                                   logs=self.__training_tqdm_dict)
+        return metrics
